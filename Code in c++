@@ -114,3 +114,87 @@ public void RotateFrontClockwise90Degree()
     }
 }
 }
+class Cube{
+private static void RotateFace(Cube s, int n, sbyte face)
+{
+    Debug.Assert(n < 4);
+    Debug.Assert(face < 6);
+    s.MapFrontFrom(face);
+    RotateFront(s, n);
+    s.MapFrontTo(face);
+}
+}
+class FaceLayout3D{
+public static FaceLayout3D[] face3DLayouts;
+static FaceLayout3D()
+{
+    face3DLayouts = new FaceLayout3D[6];
+    face3DLayouts[0] = new FaceLayout3D(0, 1, 2, 3, 4, 5);
+    face3DLayouts[1] = new FaceLayout3D(1, 2, 0, 4, 5, 3);
+    // reset maps...
+}
+class FaceLayout3D{
+sbyte[] order;
+sbyte[] reverseOrder;
+private FaceLayout3D(sbyte a1, sbyte a2, sbyte a3, sbyte a4, sbyte a5, sbyte a6)
+{
+    order = new sbyte[6] { a1, a2, a3, a4, a5, a6 };
+    reverseOrder = new sbyte[6];
+    for (sbyte i = 0; i < 6; i++)
+    {
+        for (sbyte j = 0; j < 6; j++)
+        {
+            if (order[j] == i)
+            {
+                reverseOrder[i] = j;
+            }
+        }
+    }
+}
+
+public static sbyte MapFrontFrom(sbyte side, sbyte facelet)
+{
+    FaceLayout3D r = face3DLayouts[side];
+    // order[i] - > i
+    return r.reverseOrder[facelet];
+}
+
+public static sbyte MapFrontTo(sbyte side, sbyte facelet)
+{
+    FaceLayout3D r = face3DLayouts[side];
+    // i - > order[i]
+    return r.order[facelet];
+}
+}
+
+CONSOLE_SCREEN_BUFFER_INFO consoleScreenBufferInfo;
+GetConsoleScreenBufferInfo(hConsole, out consoleScreenBufferInfo);
+this.oldTextAttributes = consoleScreenBufferInfo.wAttributes;
+int wTextAttributes = (this.oldTextAttributes & ~0xFF) | color;
+SetConsoleTextAttribute(hConsole, wTextAttributes);
+using (new ConsoleColor(color)
+{
+    Console.Write("{0}", c);
+}
+delegate void MoveFunction(Cube s);
+MoveFunction action;
+static void AddMove(string name, MoveFunction action)
+{
+    allMoves.Add(name, new Move(name, action));
+}
+//Define all the moves:
+    AddMove("F", s => RotateFront(s, 1));
+    AddMove("F2", s => RotateFront(s, 2));
+    AddMove("F'", s => RotateFront(s, 3));
+    if(move=="F") RotateFront(s,1) else if(move=="F2") ...
+public static bool IsValidMove(string move)
+{
+    return allMoves.ContainsKey(move);
+}
+AddFaceColorMap(Front, "Front", ConsoleColor.BackGroundColor.Grey, "w");
+AddFaceColorMap(Right, "Right", ConsoleColor.BackGroundColor.Yellow, "y");
+AddFaceColorMap(Up, "Up", ConsoleColor.BackGroundColor.Magenta, "p");
+AddFaceColorMap(Left, "Left", ConsoleColor.BackGroundColor.Green, "g");
+AddFaceColorMap(Down, "Down", ConsoleColor.BackGroundColor.Red, "r");
+AddFaceColorMap(Back, "Back", ConsoleColor.BackGroundColor.Blue, "b");
+....
