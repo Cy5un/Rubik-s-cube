@@ -1,0 +1,116 @@
+Implementation of Cube's Move
+Although there are 39 different moves for the Cube, the only way to change a Cube's state is to rotate the cube. When we are rotating a face, we are actually rotating every cubie in the face. From the class diagram above, you can see that the Cube is an aggregation of smaller object in layers: Cube has Face, Face has Cubie, CubiePosition has FaceIndex. So, we just need to define the rotation in each layer. We first find out how to rotate the front face clockwise 90 degree.
+
+Front Face Rotate Clockwise 90 Degree
+The name of this move is "F". In order to rotate a Face, we need to implement the rotation of each Cubie on the face. Note that rotating the front face won't affect the position of back face. So, we only need to examine the right(1), up(2), left(3), and down(4) faces after the rotation. In the below graph, after we clockwise rotate 90 degree, we'll transform:
+     ___
+    |   |
+    | 2 |
+ ___|___|___
+|   |   |   |
+| 3 | 0 | 1 |
+|___|___|___|
+    |   |
+    | 4 |
+    |___|
+into 
+     ___
+    |   |
+    | 3 |
+ ___|___|___
+|   |   |   |
+| 4 | 0 | 2 |
+|___|___|___|
+    |   |
+    | 1 |
+    |___|
+That is the foundation of all the rotation functions. We can implement the function as:
+class Face{
+public static sbyte RotateFrontClockwise90Degree(sbyte v)
+{
+    switch (v)
+    {
+        case Face.Front:
+            return (sbyte)Face.Front;
+        case Face.Right:
+            return (sbyte)Face.Down;
+        case Face.Down:
+            return (sbyte)Face.Left;
+        case Face.Left:
+            return (sbyte)Face.Up;
+        case Face.Up:
+            return (sbyte)Face.Right;
+        case Face.Back:
+            return Face.Back;
+        default:
+            throw new ApplicationException("invalid input");
+    }
+}
+Rotate of Cubie
+In the beginning, I stored the Cubies as:
+class Face{
+Cubie[,] cubies=new Cubie[3,3];
+}
+class CubiePosition{
+sbyte a1, a2, a3
+}
+class CubieColor{
+sbyte color, neighbor1, neibor3
+}
+class Cubie{
+CubiePosition position;
+CubieColor color;
+}
+class Face{
+List<cubie> cubies;
+}
+class CubiePosition{
+public void RotateFrontClockwise90Degree()
+{
+    a1 = Face.RotateFrontClockwise90Degree(a1);
+    a2 = Face.RotateFrontClockwise90Degree(a2);
+    a3 = Face.RotateFrontClockwise90Degree(a3);
+    AdjustOrder();//make sure that a1<=a2<=a3
+}
+}
+class Face{
+    public void RotateFrontClockwise90Degree(){
+        foreach (Cubie cubie in cubies){
+            cubie.position.RotateFrontClockwise90Degree();
+        }
+    }
+}
+class Cube{
+public void RotateFrontClockwise90Degree()
+{
+    //rotate the front side
+    faces[Face.Front].RotateFrontClockwise90Degree();
+    //For the right, up, left, and down side, we need to rotate one row that is 
+    //close to the front side
+    //we start at the up side. The three cubies are the [up, front, {left/front/right}]
+    foreach (sbyte side in new sbyte[] { Face.Left, Face.Front, Face.Right })
+    {
+        sbyte currentFace = Face.Up;
+        sbyte currentPosition = side;
+        CubieColor saved = faces[currentFace][currentFace, Face.Front, currentPosition];
+        for (int i = 0; i < 4; i++)
+        {
+            // go counter-clockwise to update each value
+            sbyte nextFace = Face.RotateFrontCounterClockwise90Degree(currentFace);
+            sbyte nextPosition = 
+		Face.RotateFrontCounterClockwise90Degree(currentPosition);
+            if (i == 3)
+            {
+                faces[currentFace][currentFace, Face.Front, currentPosition] = saved;
+            }
+            else
+            {
+                faces[currentFace][currentFace, Face.Front, currentPosition] = 
+			faces[nextFace][nextFace, Face.Front, nextPosition];
+            }
+            currentFace = nextFace;
+            currentPosition = nextPosition;
+        }
+    }
+}
+}
